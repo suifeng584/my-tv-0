@@ -41,10 +41,10 @@ class TVGroupModel : ViewModel() {
         _tvGroupModel.value = newList
     }
 
-    fun clear() {
+    fun clear2() {
         _tvGroupModel.value = mutableListOf(getTVListModel(0)!!, getTVListModel(1)!!)
         setPosition(0)
-        getTVListModel(1)?.clear()
+        getTVListModel(1)?.clear2()
     }
 
     fun getTVListModel(): TVListModel? {

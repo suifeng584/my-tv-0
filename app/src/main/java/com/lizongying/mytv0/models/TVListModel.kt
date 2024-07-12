@@ -82,7 +82,7 @@ class TVListModel(private val name: String, private val index: Int) : ViewModel(
         }
     }
 
-    fun clear() {
+    fun clear2() {
         _tvListModel.value = mutableListOf()
         setPosition(0)
     }

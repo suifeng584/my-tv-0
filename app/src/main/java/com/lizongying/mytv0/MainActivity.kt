@@ -65,8 +65,16 @@ class MainActivity : FragmentActivity() {
             }
         }
 
-        window.statusBarColor = Color.TRANSPARENT
-        window.navigationBarColor = Color.TRANSPARENT
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS)
+            window.addFlags(WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION)
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                window.statusBarColor = Color.TRANSPARENT
+                window.navigationBarColor = Color.TRANSPARENT
+            }
+        }
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             window.navigationBarDividerColor = Color.TRANSPARENT
         }
