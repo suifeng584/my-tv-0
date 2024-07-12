@@ -102,5 +102,5 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.recyclerview)
 
-    implementation(files("libs/lib-decoder-ffmpeg-release.aar"))
+    implementation(files("libs/ijkplayer-armv7a-release.aar","libs/ijkplayer-java-release.aar"))
 }

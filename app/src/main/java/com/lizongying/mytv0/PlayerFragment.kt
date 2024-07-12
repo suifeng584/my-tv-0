@@ -3,6 +3,8 @@ package com.lizongying.mytv0
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver
@@ -26,16 +28,19 @@ import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import com.lizongying.mytv0.databinding.PlayerBinding
 import com.lizongying.mytv0.models.SourceType
 import com.lizongying.mytv0.models.TVModel
+import tv.danmaku.ijk.media.player.IjkMediaPlayer
 
-
-class PlayerFragment : Fragment() {
+class PlayerFragment : Fragment(), SurfaceHolder.Callback {
     private var _binding: PlayerBinding? = null
     private val binding get() = _binding!!
 
-    private var player: ExoPlayer? = null
+    private var ijkUtil: IjkUtil? = null
 
+    private var videoUrl = ""
     private var tvModel: TVModel? = null
     private val aspectRatio = 16f / 9f
+
+    private lateinit var surfaceView: SurfaceView
 
     private lateinit var mainActivity: MainActivity
 
@@ -49,149 +54,35 @@ class PlayerFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View {
         _binding = PlayerBinding.inflate(inflater, container, false)
-        val playerView = _binding!!.playerView
+        surfaceView = _binding!!.surfaceView
+        surfaceView.holder.addCallback(this)
 
-        playerView.viewTreeObserver?.addOnGlobalLayoutListener(object :
-            ViewTreeObserver.OnGlobalLayoutListener {
-            @OptIn(UnstableApi::class)
-            override fun onGlobalLayout() {
-                playerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+        ijkUtil = IjkUtil.getInstance();
+        ijkUtil?.setOnErrorListener(TAG) { what, extra ->
+            Log.e(TAG, "PlaybackException what=" + what + " extra=" + extra)
+            val err = "播放错误"
+            tvModel?.setErrInfo(err)
+            tvModel?.setReady()
+            //tvModel?.changed("retry")
+        }
 
-                val renderersFactory = context?.let { DefaultRenderersFactory(it) }
-                val playerMediaCodecSelector = PlayerMediaCodecSelector()
-                renderersFactory?.setMediaCodecSelector(playerMediaCodecSelector)
-                renderersFactory?.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
-
-                player = context?.let {
-                    ExoPlayer.Builder(it)
-                        .setRenderersFactory(renderersFactory!!)
-                        .build()
-                }
-                playerView.player = player
-                player?.repeatMode = REPEAT_MODE_ALL
-                player?.playWhenReady = true
-                player?.addListener(object : Player.Listener {
-                    override fun onVideoSizeChanged(videoSize: VideoSize) {
-                        val ratio = playerView.measuredWidth.div(playerView.measuredHeight)
-                        val layoutParams = playerView.layoutParams
-                        if (ratio < aspectRatio) {
-                            layoutParams?.height =
-                                (playerView.measuredWidth.div(aspectRatio)).toInt()
-                            playerView.layoutParams = layoutParams
-                        } else if (ratio > aspectRatio) {
-                            layoutParams?.width =
-                                (playerView.measuredHeight.times(aspectRatio)).toInt()
-                            playerView.layoutParams = layoutParams
-                        }
-                    }
-
-                    override fun onIsPlayingChanged(isPlaying: Boolean) {
-                        super.onIsPlayingChanged(isPlaying)
-                        if (isPlaying) {
-                            tvModel?.confirmSourceType()
-                            tvModel?.setErrInfo("")
-                            tvModel!!.retryTimes = 0
-                        } else {
-                            Log.i(TAG, "${tvModel?.tv?.title} 播放停止")
-//                                tvModel?.setErrInfo("播放停止")
-                        }
-                    }
-
-                    override fun onPlaybackStateChanged(playbackState: Int) {
-                        Log.d(TAG, "playbackState $playbackState")
-                        super.onPlaybackStateChanged(playbackState)
-                    }
-
-
-                    override fun onPositionDiscontinuity(
-                        oldPosition: Player.PositionInfo,
-                        newPosition: Player.PositionInfo,
-                        reason: Int
-                    ) {
-                        if (reason == DISCONTINUITY_REASON_AUTO_TRANSITION) {
-                            mainActivity.onPlayEnd()
-                        }
-                        super.onPositionDiscontinuity(oldPosition, newPosition, reason)
-                    }
-
-                    override fun onPlayerError(error: PlaybackException) {
-                        super.onPlayerError(error)
-                        Log.i(
-                            TAG,
-                            "播放错误 ${error.errorCode}||| ${error.errorCodeName}||| ${error.message}||| $error"
-                        )
-                        tvModel?.setErrInfo("播放错误")
-                        if (tvModel?.getSourceType() == SourceType.UNKNOWN) {
-                            tvModel?.nextSource()
-                        }
-                        if (tvModel!!.retryTimes < tvModel!!.retryMaxTimes) {
-                            tvModel?.setReady()
-                            tvModel!!.retryTimes++
-                        }
-                    }
-                })
-
-                (activity as MainActivity).ready(TAG)
-                Log.i(TAG, "player ready")
-            }
-        })
+        ijkUtil?.setOnPreparedListener(TAG) {
+            tvModel?.setErrInfo("")
+        }
 
         return _binding!!.root
     }
 
     @OptIn(UnstableApi::class)
     fun play(tvModel: TVModel) {
+        videoUrl = tvModel.videoUrl.value ?: return
         this.tvModel = tvModel
-        player?.run {
-            IgnoreSSLCertificate.ignore()
-            val httpDataSource = DefaultHttpDataSource.Factory()
-            httpDataSource.setKeepPostFor302Redirects(true)
-            httpDataSource.setAllowCrossProtocolRedirects(true)
-            httpDataSource.setTransferListener(object : TransferListener {
-                override fun onTransferInitializing(
-                    source: DataSource,
-                    dataSpec: DataSpec,
-                    isNetwork: Boolean
-                ) {
-//                    TODO("Not yet implemented")
-                }
+        Log.i(TAG, "play ${tvModel.tv.title} $videoUrl")
 
-                override fun onTransferStart(
-                    source: DataSource,
-                    dataSpec: DataSpec,
-                    isNetwork: Boolean
-                ) {
-                    Log.d(TAG, "onTransferStart uri ${source.uri}")
-//                    TODO("Not yet implemented")
-                }
-
-                override fun onBytesTransferred(
-                    source: DataSource,
-                    dataSpec: DataSpec,
-                    isNetwork: Boolean,
-                    bytesTransferred: Int
-                ) {
-//                    TODO("Not yet implemented")
-                }
-
-                override fun onTransferEnd(
-                    source: DataSource,
-                    dataSpec: DataSpec,
-                    isNetwork: Boolean
-                ) {
-//                    TODO("Not yet implemented")
-                }
-            })
-
-            val dataSource = tvModel.getSource()
-            if (dataSource != null) {
-                setMediaSource(dataSource)
-            } else {
-                setMediaItem(tvModel.mediaItem)
-            }
-
-            prepare()
-        }
+        ijkUtil?.reset()
+        ijkUtil?.setDisplay(surfaceView.holder)
+        ijkUtil?.setDataSource(videoUrl)
+        ijkUtil?.prepareAsync()
     }
 
     @OptIn(UnstableApi::class)
@@ -222,31 +113,64 @@ class PlayerFragment : Fragment() {
     override fun onStart() {
         Log.i(TAG, "onStart")
         super.onStart()
-        if (player?.isPlaying == false) {
+        if (ijkUtil?.isPlaying == false) {
             Log.i(TAG, "replay")
-            player?.prepare()
-            player?.play()
+            ijkUtil?.start()
         }
     }
 
     override fun onPause() {
         super.onPause()
-        if (player?.isPlaying == true) {
-            player?.stop()
-        }
+        ijkUtil?.pause()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        player?.release()
+        ijkUtil?.release()
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
+        ijkUtil = null;
     }
 
     companion object {
         private const val TAG = "PlayerFragment"
+    }
+
+    override fun surfaceCreated(holder: SurfaceHolder) {
+
+        ijkUtil?.setDisplay(holder)
+        (activity as MainActivity).ready(TAG)
+        Log.i(TAG, "IjkMediaPlayer ready")
+    }
+
+    private fun updateVideoLayout(videoWidth: Int, videoHeight: Int) {
+        val surfaceWidth = surfaceView.width
+        val surfaceHeight = surfaceView.height
+
+        val aspectRatio = videoWidth.toFloat() / videoHeight.toFloat()
+        var newWidth = surfaceWidth
+        var newHeight = surfaceHeight
+
+        if (surfaceWidth.toFloat() / surfaceHeight.toFloat() > aspectRatio) {
+            newWidth = (surfaceHeight.toFloat() * aspectRatio).toInt()
+        } else {
+            newHeight = (surfaceWidth.toFloat() / aspectRatio).toInt()
+        }
+
+        val layoutParams = surfaceView.layoutParams
+        layoutParams.width = newWidth
+        layoutParams.height = newHeight
+        surfaceView.layoutParams = layoutParams
+    }
+
+    override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        Log.i(TAG, "Surface changed: $width x $height")
+    }
+
+    override fun surfaceDestroyed(holder: SurfaceHolder) {
+        ijkUtil?.setDisplay(null)
     }
 }
