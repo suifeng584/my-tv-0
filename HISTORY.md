@@ -2,7 +2,8 @@
 
 ### v1.2.8-kk
 
-* support android kitkat
+* Support android kitkat
+* Improve https access module compatibility with android 4.4
 
 ### v1.2.8
 

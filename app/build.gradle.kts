@@ -103,4 +103,7 @@ dependencies {
     implementation(libs.recyclerview)
 
     implementation(files("libs/lib-decoder-ffmpeg-release.aar"))
+
+    implementation(libs.conscrypt)
+    implementation(libs.okhttp.logging)
 }
