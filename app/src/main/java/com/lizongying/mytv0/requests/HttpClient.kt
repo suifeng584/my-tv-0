@@ -17,7 +17,7 @@ import javax.net.ssl.X509TrustManager
 object HttpClient {
     const val TAG = "HttpClient"
     private const val HOST = "https://ghproxy.org/https://raw.githubusercontent.com/vrichv/my-tv-0/"
-    const val DOWNLOAD_HOST = "https://ghproxy.org/https://github.com/vrichv/releases/download/"
+    const val DOWNLOAD_HOST = "https://ghproxy.org/https://github.com/vrichv/my-tv-0/releases/download/"
 
     val okHttpClient: OkHttpClient by lazy {
         getUnsafeOkHttpClient()
