@@ -222,6 +222,11 @@ class PlayerFragment : Fragment() {
     override fun onStart() {
         Log.i(TAG, "onStart")
         super.onStart()
+    }
+
+    override fun onResume() {
+        Log.i(TAG, "play-onResume")
+        super.onResume()
         if (player?.isPlaying == false) {
             Log.i(TAG, "replay")
             player?.prepare()
