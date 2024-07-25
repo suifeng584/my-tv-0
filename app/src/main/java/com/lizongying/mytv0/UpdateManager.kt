@@ -63,7 +63,10 @@ class UpdateManager(
         val apkFileName = "$apkName-${release.version_name}.apk"
         val url =
             "${HttpClient.DOWNLOAD_HOST}${release.version_name}/$apkName-${release.version_name}.apk"
-        val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        var downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        if (downloadDir == null) {
+            downloadDir = File(context.filesDir, "downloads")
+        }
 
         cleanupDownloadDirectory(downloadDir, apkName)
         val file = File(downloadDir, apkFileName)
