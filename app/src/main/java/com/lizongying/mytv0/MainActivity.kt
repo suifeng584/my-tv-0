@@ -421,7 +421,11 @@ class MainActivity : FragmentActivity() {
 
     private val hideSetting = Runnable {
         if (!settingFragment.isHidden) {
-            supportFragmentManager.beginTransaction().hide(settingFragment).commitNow()
+            if (!supportFragmentManager.isDestroyed) {
+                supportFragmentManager.beginTransaction().hide(settingFragment).commitNow()
+            } else {
+                Log.e(TAG, "SupportFragmentManager is destroyed!")
+            }
             showTime()
         }
     }

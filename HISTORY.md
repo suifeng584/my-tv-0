@@ -1,8 +1,11 @@
 ## 更新日志
 
-### v1.2.8-kk
+### v1.2.8-ijk
 
-* support android kitkat
+* Use ijkplayer to get better playback effect on low-end devices. Please test it yourself and decide which version to use based on the effect. Thanks @caixxxin .
+* Support android kitkat
+* Improve https access module compatibility with android 4.4
+* Fixed a weird bug on Sharp TV: after the TV is started, this APP will start twice and stop playing after the second start.
 
 ### v1.2.8
 

@@ -7,28 +7,14 @@ import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.view.View
 import android.view.ViewGroup
-import android.view.ViewTreeObserver
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
 import androidx.media3.common.MimeTypes
-import androidx.media3.common.PlaybackException
-import androidx.media3.common.Player
-import androidx.media3.common.Player.DISCONTINUITY_REASON_AUTO_TRANSITION
-import androidx.media3.common.Player.REPEAT_MODE_ALL
-import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
-import androidx.media3.datasource.DataSource
-import androidx.media3.datasource.DataSpec
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.datasource.TransferListener
-import androidx.media3.exoplayer.DefaultRenderersFactory
-import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import com.lizongying.mytv0.databinding.PlayerBinding
-import com.lizongying.mytv0.models.SourceType
 import com.lizongying.mytv0.models.TVModel
-import tv.danmaku.ijk.media.player.IjkMediaPlayer
 
 class PlayerFragment : Fragment(), SurfaceHolder.Callback {
     private var _binding: PlayerBinding? = null
@@ -113,6 +99,11 @@ class PlayerFragment : Fragment(), SurfaceHolder.Callback {
     override fun onStart() {
         Log.i(TAG, "onStart")
         super.onStart()
+    }
+
+    override fun onResume() {
+        Log.i(TAG, "play-onResume")
+        super.onResume()
         if (ijkUtil?.isPlaying == false) {
             Log.i(TAG, "replay")
             ijkUtil?.start()

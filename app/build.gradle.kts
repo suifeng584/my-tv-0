@@ -103,4 +103,7 @@ dependencies {
     implementation(libs.recyclerview)
 
     implementation(files("libs/ijkplayer-armv7a-release.aar","libs/ijkplayer-java-release.aar"))
+
+    implementation(libs.conscrypt)
+    implementation(libs.okhttp.logging)
 }

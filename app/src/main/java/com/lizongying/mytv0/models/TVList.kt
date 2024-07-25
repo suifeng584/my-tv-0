@@ -67,9 +67,10 @@ object TVList {
                 update(it)
             }
         } else if (!epg.isNullOrEmpty()) {
-            CoroutineScope(Dispatchers.IO).launch {
-                updateEPG()
-            }
+//            //not enable at this version
+//            CoroutineScope(Dispatchers.IO).launch {
+//                updateEPG()
+//            }
         }
     }
 
