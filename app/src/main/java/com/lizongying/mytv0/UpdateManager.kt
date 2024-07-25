@@ -19,6 +19,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.io.IOException
 
+
 class UpdateManager(
     private val context: Context,
     private val versionCode: Long
@@ -63,7 +64,10 @@ class UpdateManager(
         val apkFileName = "$apkName-${release.version_name}.apk"
         val url =
             "${HttpClient.DOWNLOAD_HOST}${release.version_name}/$apkName-${release.version_name}.apk"
-        val downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        var downloadDir = context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+        if (downloadDir == null) {
+            downloadDir = File(context.filesDir, "downloads")
+        }
 
         cleanupDownloadDirectory(downloadDir, apkName)
         val file = File(downloadDir, apkFileName)
@@ -88,6 +92,7 @@ class UpdateManager(
             }
         }
     }
+
     private suspend fun downloadWithRetry(url: String, file: File, maxRetries: Int = 3) {
         var retries = 0
         while (retries < maxRetries) {

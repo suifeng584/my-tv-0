@@ -9,12 +9,20 @@ object PortUtil {
 
     fun findFreePort(): Int {
         var port = -1
+        var socket: ServerSocket? = null
         try {
-            ServerSocket(0).use { socket ->
-                port = socket.localPort
-            }
+            socket = ServerSocket(0)
+            port = socket.localPort
         } catch (e: IOException) {
             e.printStackTrace()
+        } finally {
+            if (socket != null) {
+                try {
+                    socket.close()
+                } catch (e: IOException) {
+                    e.printStackTrace()
+                }
+            }
         }
         return port
     }

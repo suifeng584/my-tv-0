@@ -4,7 +4,7 @@ import retrofit2.Call
 import retrofit2.http.GET
 
 interface ReleaseService {
-    @GET("kitkat/version.json")
+    @GET("jellybean/version.json")
     fun getRelease(
     ): Call<ReleaseResponse>
 }
