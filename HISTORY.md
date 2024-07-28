@@ -1,10 +1,11 @@
 ## 更新日志
 
-### v1.2.8-kk
+### v1.2.8-jb
 
-* Support android kitkat
-* Improve https access module compatibility with android 4.4
-* Fixed a weird bug on Sharp TV: after the TV is started, this APP will start twice and stop playing after the second start.
+* FOR TEST ONLY!
+* DO NOT USE THIS VERSION UNLESS YOUR ANDROID VERSION IS 4.2/4.3
+* Support jellybean(API level 17+), not tested.
+* No subsequent maintenance or releases.
 
 ### v1.2.8
 
