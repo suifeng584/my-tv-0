@@ -1,10 +1,12 @@
 ## 更新日志
 
 ### v1.2.8-kk
-
-* Support android kitkat
-* Improve https access module compatibility with android 4.4
-* Fixed a weird bug on Sharp TV: after the TV is started, this APP will start twice and stop playing after the second start.
+- kk6
+  * Improve playback compatibility and performance, fix a lot of bugs.
+- kk5
+  * Support android kitkat
+  * Improve https access module compatibility with android 4.4
+  * Fixed a weird bug on Sharp TV: after the TV is started, this APP will start twice and stop playing after the second start.
 
 ### v1.2.8
 
