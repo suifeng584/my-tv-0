@@ -124,6 +124,7 @@ class TVModel(var tv: TV) : ViewModel() {
         httpDataSource = DefaultHttpDataSource.Factory()
         httpDataSource.setKeepPostFor302Redirects(true)
         httpDataSource.setAllowCrossProtocolRedirects(true)
+        httpDataSource.setConnectTimeoutMs(5000)
         tv.headers?.let {
             httpDataSource.setDefaultRequestProperties(it)
             it.forEach { (key, value) ->

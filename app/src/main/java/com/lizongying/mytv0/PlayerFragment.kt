@@ -138,10 +138,11 @@ class PlayerFragment : Fragment() {
                         }
                         if (tvModel!!.retryTimes == tvModel!!.retryMaxTimes) {
                             val errorType = when (error.errorCode) {
-                                in 2000 until 3000 -> "网络错误"
-                                in 3000 until 4000 -> "解析错误"
-                                in 4000 until 6000 -> "解码错误"
-                                in 6000 until 7000 -> "DRM 错误"
+                                in 2000 until 2003 -> "网络异常"
+                                in 2003 until 3000 -> "服务器异常"
+                                in 3000 until 4000 -> "节目源异常"
+                                in 4000 until 6000 -> "解码异常"
+                                in 6000 until 7000 -> "DRM 异常"
                                 else -> "播放错误"
                             }
                             tvModel?.setErrInfo("${errorType}[${error.errorCode}]\n${error.errorCodeName}")
