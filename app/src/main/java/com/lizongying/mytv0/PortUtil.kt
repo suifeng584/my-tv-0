@@ -8,13 +8,18 @@ import java.net.ServerSocket
 object PortUtil {
 
     fun findFreePort(): Int {
-        var port = -1
+        var port: Int
         var socket: ServerSocket? = null
         try {
-            socket = ServerSocket(0)
+            socket = ServerSocket(10086)
             port = socket.localPort
         } catch (e: IOException) {
-            e.printStackTrace()
+            try {
+                socket = ServerSocket(0)
+                port = socket.localPort
+            } catch (e: IOException) {
+               return -1
+            }
         } finally {
             if (socket != null) {
                 try {

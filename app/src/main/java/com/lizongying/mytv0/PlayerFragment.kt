@@ -61,6 +61,7 @@ class PlayerFragment : Fragment() {
                 val playerMediaCodecSelector = PlayerMediaCodecSelector()
                 renderersFactory?.setMediaCodecSelector(playerMediaCodecSelector)
                 renderersFactory?.setExtensionRendererMode(DefaultRenderersFactory.EXTENSION_RENDERER_MODE_ON)
+                renderersFactory?.setEnableDecoderFallback(true)
 
                 player = context?.let {
                     ExoPlayer.Builder(it)
@@ -120,13 +121,31 @@ class PlayerFragment : Fragment() {
                             TAG,
                             "播放错误 ${error.errorCode}||| ${error.errorCodeName}||| ${error.message}||| $error"
                         )
+
+                        if (error.errorCode == PlaybackException.ERROR_CODE_BEHIND_LIVE_WINDOW) {
+                            tvModel?.setReady()
+                            return
+                        }
+
+                        "错误码[${error.errorCode}] ${error.errorCodeName}".showToast()
                         tvModel?.setErrInfo("播放错误")
-                        if (tvModel?.getSourceType() == SourceType.UNKNOWN) {
+                        if (tvModel?.getSourceType() == SourceType.UNKNOWN) {//FIXME: retryTimes and UNKNOWN
                             tvModel?.nextSource()
                         }
                         if (tvModel!!.retryTimes < tvModel!!.retryMaxTimes) {
                             tvModel?.setReady()
                             tvModel!!.retryTimes++
+                        }
+                        if (tvModel!!.retryTimes == tvModel!!.retryMaxTimes) {
+                            val errorType = when (error.errorCode) {
+                                in 2000 until 2003 -> "网络异常"
+                                in 2003 until 3000 -> "服务器异常"
+                                in 3000 until 4000 -> "节目源异常"
+                                in 4000 until 6000 -> "解码异常"
+                                in 6000 until 7000 -> "DRM 异常"
+                                else -> "播放错误"
+                            }
+                            tvModel?.setErrInfo("${errorType}[${error.errorCode}]\n${error.errorCodeName}")
                         }
                     }
                 })
@@ -206,6 +225,7 @@ class PlayerFragment : Fragment() {
                 requiresSecureDecoder,
                 requiresTunnelingDecoder
             )
+            Log.d(TAG, "Requested MIME type: $mimeType")
             if (mimeType == MimeTypes.VIDEO_H265 && !requiresSecureDecoder && !requiresTunnelingDecoder) {
                 if (infos.size > 0) {
                     val infosNew = infos.find { it.name == "c2.android.hevc.decoder" }

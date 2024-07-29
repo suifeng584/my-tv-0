@@ -323,7 +323,13 @@ object TVList {
     }
 
     private fun getTVModel(idx: Int): TVModel {
-        return listModel[idx]
+        if (idx < listModel.size) {
+            return listModel[idx]
+        } else {
+            SP.channel=0
+            this.setPosition(0)
+            return listModel[0]
+        }
     }
 
     fun setPosition(position: Int): Boolean {
