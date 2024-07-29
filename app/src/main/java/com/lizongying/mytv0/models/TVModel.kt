@@ -6,6 +6,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.media3.common.MediaItem
+import androidx.media3.common.util.Log
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.exoplayer.dash.DashMediaSource
@@ -23,7 +24,7 @@ class TVModel(var tv: TV) : ViewModel() {
         get() = _position
 
     var retryTimes = 0
-    var retryMaxTimes = 10
+    var retryMaxTimes = 3
     var programUpdateTime = 0L
 
     var groupIndex = 0
@@ -139,12 +140,15 @@ class TVModel(var tv: TV) : ViewModel() {
             addSource(SourceType.HLS)
         } else if (path.lowercase().endsWith(".mpd")) {
             addSource(SourceType.DASH)
-        } else if (scheme.lowercase() == "rtsp") {
+        } else if (scheme.lowercase() == "rtsp" || scheme.lowercase() == "rtp") {
             addSource(SourceType.RTSP)
+        } else if (path.lowercase().substringAfterLast(".", "")
+                .let { it.isNotEmpty() && videoExtensions.contains(it) }
+        ) {
+            addSource(SourceType.PROGRESSIVE)
         } else {
-//            addSource(SourceType.UNKNOWN)
-//            addSource(SourceType.PROGRESSIVE)
-            addSource(SourceType.HLS)
+            Log.w(TAG, "URL SourceType UNKNOWN: ${uri.toString()}")
+            addSource(SourceType.UNKNOWN)
         }
 
         nextSource()
@@ -209,5 +213,8 @@ class TVModel(var tv: TV) : ViewModel() {
 
     companion object {
         private const val TAG = "TVModel"
+        val videoExtensions = setOf(
+            ".flv", ".mp4", ".avi", ".mkv", ".mov", ".mpeg", "wmv", "webm"
+        )
     }
 }
