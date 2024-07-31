@@ -59,7 +59,7 @@ object TVList {
         }
 
         if (SP.config.isNullOrEmpty()) {
-            SP.config = "https://live.fanmingming.com/tv/m3u/index.m3u"
+            SP.config = "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
         }
 
         if (SP.configAutoLoad) {
