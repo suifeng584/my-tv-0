@@ -1,6 +1,7 @@
 package com.lizongying.mytv0.requests
 
 import android.util.Log
+import com.lizongying.mytv0.MyTVApplication
 import okhttp3.ConnectionSpec
 import okhttp3.Interceptor
 import okhttp3.OkHttpClient
@@ -12,15 +13,15 @@ import java.security.Security
 import java.util.Collections
 import java.util.concurrent.TimeUnit
 import javax.net.ssl.SSLContext
-import javax.net.ssl.X509TrustManager
 
 object HttpClient {
     const val TAG = "HttpClient"
     private const val HOST = "https://ghproxy.org/https://raw.githubusercontent.com/vrichv/my-tv-0/"
-    const val DOWNLOAD_HOST = "https://ghproxy.org/https://github.com/vrichv/my-tv-0/releases/download/"
+    const val DOWNLOAD_HOST =
+        "https://ghproxy.org/https://github.com/vrichv/my-tv-0/releases/download/"
 
     val okHttpClient: OkHttpClient by lazy {
-        getUnsafeOkHttpClient()
+        getSafeOkHttpClient()
     }
 
     val releaseService: ReleaseService by lazy {
@@ -37,7 +38,7 @@ object HttpClient {
             .build().create(ConfigService::class.java)
     }
 
-    private fun getUnsafeOkHttpClient(): OkHttpClient {
+    private fun getSafeOkHttpClient(): OkHttpClient {
         // Init Conscrypt
         val conscrypt = Conscrypt.newProvider()
         // Add as provider
@@ -47,7 +48,7 @@ object HttpClient {
         // ConnectionSpec.MODERN_TLS = TLS1.0 + TLS1.1 + TLS1.2 + TLS 1.3
         // ConnectionSpec.RESTRICTED_TLS = TLS 1.2 + TLS 1.3
         val okHttpBuilder = OkHttpClient.Builder()
-            .connectionSpecs(Collections.singletonList(ConnectionSpec.MODERN_TLS))
+            .connectionSpecs(Collections.singletonList(ConnectionSpec.RESTRICTED_TLS))
 
         val userAgentInterceptor = Interceptor { chain ->
             val originalRequest = chain.request()
@@ -65,10 +66,7 @@ object HttpClient {
         }
 
         try {
-            //FIXME: NOT-SAFE
-            //val tm: X509TrustManager = Conscrypt.getDefaultX509TrustManager()
-            val tm: X509TrustManager = InternalX509TrustManager()
-
+            val tm = InternalX509TrustManager(MyTVApplication.getInstance().applicationContext)
             val sslContext = SSLContext.getInstance("TLS", conscrypt)
             sslContext.init(null, arrayOf(tm), null)
             okHttpBuilder.sslSocketFactory(InternalSSLSocketFactory(sslContext.socketFactory), tm)
