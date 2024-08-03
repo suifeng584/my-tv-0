@@ -15,6 +15,7 @@ import com.lizongying.mytv0.showToast
 import io.github.lizongying.Gua
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -59,7 +60,8 @@ object TVList {
         }
 
         if (SP.config.isNullOrEmpty()) {
-            SP.config = "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
+            SP.config =
+                "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
         }
 
         if (SP.configAutoLoad) {
@@ -67,10 +69,10 @@ object TVList {
                 update(it)
             }
         } else if (!epg.isNullOrEmpty()) {
-//            //not enable at this version
-//            CoroutineScope(Dispatchers.IO).launch {
-//                updateEPG()
-//            }
+            CoroutineScope(Dispatchers.IO).launch {
+                delay(5000)
+                updateEPG()
+            }
         }
     }
 
@@ -204,6 +206,11 @@ object TVList {
 
             '#' -> {
                 val lines = string.lines()
+                if (!lines[0].trim().startsWith("#EXTM3U")) {
+                    Log.e(TAG, "Parse error,not start with #EXT3U")
+                    "导入频道失败，非标准M3U文件".showToast()
+                    return false
+                }
                 val nameRegex = Regex("""tvg-name="([^"]+)"""")
                 val logRegex = Regex("""tvg-logo="([^"]+)"""")
                 val epgRegex = Regex("""x-tvg-url="([^"]+)"""")
@@ -246,6 +253,11 @@ object TVList {
 
             else -> {
                 val lines = string.lines()
+                if (!lines[0].trim().contains("#genre#")) {
+                    Log.e(TAG, "Parse error,line1 not contains #genre#")
+                    "导入频道失败，没找到#genre#标志".showToast()
+                    return false
+                }
                 var group = ""
                 val l = mutableListOf<TV>()
                 for (line in lines) {
@@ -326,7 +338,7 @@ object TVList {
         if (idx < listModel.size) {
             return listModel[idx]
         } else {
-            SP.channel=0
+            SP.channel = 0
             this.setPosition(0)
             return listModel[0]
         }
