@@ -15,7 +15,6 @@ import com.lizongying.mytv0.showToast
 import io.github.lizongying.Gua
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -60,8 +59,7 @@ object TVList {
         }
 
         if (SP.config.isNullOrEmpty()) {
-            SP.config =
-                "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
+            SP.config = "https://live.fanmingming.com/tv/m3u/itv.m3u"
         }
 
         if (SP.configAutoLoad) {
@@ -217,6 +215,7 @@ object TVList {
                 val groupRegex = Regex("""group-title="([^"]+)"""")
 
                 val l = mutableListOf<TV>()
+                val tvMap = mutableMapOf<String, List<TV>>()
                 for ((index, line) in lines.withIndex()) {
                     val trimmedLine = line.trim()
                     if (trimmedLine.startsWith("#EXTM3U")) {
@@ -225,14 +224,15 @@ object TVList {
                     } else if (trimmedLine.startsWith("#EXTINF")) {
                         val info = trimmedLine.split(",")
                         val title = info.last().trim()
-                        val name = nameRegex.find(info.first())?.groupValues?.get(1)?.trim()
+                        var name = nameRegex.find(info.first())?.groupValues?.get(1)?.trim()
+                        name = name ?: title
                         val group = groupRegex.find(info.first())?.groupValues?.get(1)?.trim()
                         val logo = logRegex.find(info.first())?.groupValues?.get(1)?.trim()
                         val uris =
                             if (index + 1 < lines.size) listOf(lines[index + 1].trim()) else emptyList()
                         val tv = TV(
-                            0,
-                            name ?: "",
+                            -1,
+                            name,
                             title,
                             "",
                             logo ?: "",
@@ -244,8 +244,29 @@ object TVList {
                             listOf(),
                         )
 
-                        l.add(tv)
+                        if (!tvMap.containsKey(name)) {
+                            tvMap[name] = listOf()
+                        }
+                        tvMap[name] = tvMap[name]!! + tv
                     }
+                }
+                for ((_, tv) in tvMap) {
+                    val uris = tv.map { t -> t.uris }.flatten()
+                    val t0 = tv[0]
+                    val t1 = TV(
+                        -1,
+                        t0.name,
+                        t0.name,
+                        "",
+                        t0.logo,
+                        "",
+                        uris,
+                        mapOf(),
+                        t0.group,
+                        SourceType.UNKNOWN,
+                        listOf(),
+                    )
+                    l.add(t1)
                 }
                 list = l
                 Log.i(TAG, "导入频道 ${list.size}")
@@ -260,6 +281,7 @@ object TVList {
                 }
                 var group = ""
                 val l = mutableListOf<TV>()
+                val tvMap = mutableMapOf<String, List<String>>()
                 for (line in lines) {
                     val trimmedLine = line.trim()
                     if (trimmedLine.isNotEmpty()) {
@@ -269,23 +291,30 @@ object TVList {
                             val arr = trimmedLine.split(',').map { it.trim() }
                             val title = arr.first().trim()
                             val uris = arr.drop(1)
-                            val tv = TV(
-                                0,
-                                "",
-                                title,
-                                "",
-                                "",
-                                "",
-                                uris,
-                                mapOf(),
-                                group,
-                                SourceType.UNKNOWN,
-                                listOf(),
-                            )
 
-                            l.add(tv)
+                            if (!tvMap.containsKey(title)) {
+                                tvMap[title] = listOf()
+                            }
+                            tvMap[title] = tvMap[title]!! + uris
                         }
                     }
+                }
+                for ((title, uris) in tvMap) {
+                    val tv = TV(
+                        -1,
+                        "",
+                        title,
+                        "",
+                        "",
+                        "",
+                        uris,
+                        mapOf(),
+                        group,
+                        SourceType.UNKNOWN,
+                        listOf(),
+                    )
+
+                    l.add(tv)
                 }
                 list = l
                 Log.i(TAG, "导入频道 ${list.size}")
@@ -309,6 +338,7 @@ object TVList {
             val tvListModel = TVListModel(k, groupIndex)
             for ((listIndex, v1) in v.withIndex()) {
                 v1.tv.id = id
+                v1.setLike(SP.getLike(id))
                 v1.groupIndex = groupIndex
                 v1.listIndex = listIndex
                 tvListModel.addTVModel(v1)

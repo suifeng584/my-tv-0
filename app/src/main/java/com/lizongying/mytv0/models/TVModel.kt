@@ -17,6 +17,7 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.lizongying.mytv0.SP
 import kotlin.math.max
 import kotlin.math.min
+import kotlin.random.Random
 
 class TVModel(var tv: TV) : ViewModel() {
     private val _position = MutableLiveData<Int>()
@@ -56,14 +57,6 @@ class TVModel(var tv: TV) : ViewModel() {
     val program: LiveData<MutableList<Program>>
         get() = _program
 
-    private val _videoUrl = MutableLiveData<String>()
-    val videoUrl: LiveData<String>
-        get() = _videoUrl
-
-    fun setVideoUrl(url: String) {
-        _videoUrl.value = url
-    }
-
     private fun getVideoUrl(): String? {
         if (_videoIndex.value == null || tv.uris.isEmpty()) {
             return null
@@ -73,7 +66,8 @@ class TVModel(var tv: TV) : ViewModel() {
             return null
         }
 
-        return tv.uris[_videoIndex.value!!]
+        val index = min(max(_videoIndex.value!!, 0), tv.uris.size - 1)
+        return tv.uris[index]
     }
 
     private val _like = MutableLiveData<Boolean>()
@@ -89,6 +83,12 @@ class TVModel(var tv: TV) : ViewModel() {
         get() = _ready
 
     fun setReady() {
+//        _videoIndex.value = (_videoIndex.value!! + 1) % tv.uris.size
+//        if (tv.uris.size < 2) {
+//            _videoIndex.value = 0
+//        } else {
+//            _videoIndex.value = Random.nextInt(0, tv.uris.size - 1)
+//        }
         _ready.value = true
     }
 
@@ -102,9 +102,8 @@ class TVModel(var tv: TV) : ViewModel() {
 
     init {
         _position.value = 0
-        _videoIndex.value = 0
+        _videoIndex.value = max(0, tv.uris.size - 1)
         _like.value = SP.getLike(tv.id)
-        _videoUrl.value = getVideoUrl()
         _program.value = mutableListOf()
 
         buildSource()

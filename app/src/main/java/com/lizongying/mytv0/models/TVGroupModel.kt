@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.lizongying.mytv0.SP
 
 class TVGroupModel : ViewModel() {
+    var isInLikeMode = false
     private val _tvGroupModel = MutableLiveData<List<TVListModel>>()
     val tvGroupModel: LiveData<List<TVListModel>>
         get() = _tvGroupModel
@@ -60,6 +61,7 @@ class TVGroupModel : ViewModel() {
 
     init {
         _position.value = SP.positionGroup
+        isInLikeMode = SP.defaultLike
     }
 
     fun size(): Int {

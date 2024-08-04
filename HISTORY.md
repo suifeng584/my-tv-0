@@ -1,5 +1,19 @@
 ## 更新日志
 
+### v1.3.0-kk
+- kk1
+  * merge from 1.3.0
+
+### v1.3.0
+
+* 修復收藏BUG
+
+### v1.2.9
+
+* 同頻道多視頻地址合併
+* 更新了默認的視頻源，已安裝過的用戶需要在配置裡恢復默認
+* “收藏模式”下，上下按鍵頻道只會在收藏列表裡進行切換
+
 ### v1.2.8-kk
 - kk6
   * Improve playback compatibility and performance, fix a lot of bugs.
