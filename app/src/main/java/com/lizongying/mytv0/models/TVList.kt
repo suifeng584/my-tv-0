@@ -15,6 +15,7 @@ import com.lizongying.mytv0.showToast
 import io.github.lizongying.Gua
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -59,7 +60,8 @@ object TVList {
         }
 
         if (SP.config.isNullOrEmpty()) {
-            SP.config = "https://live.fanmingming.com/tv/m3u/itv.m3u"
+            SP.config =
+                "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
         }
 
         if (SP.configAutoLoad) {
