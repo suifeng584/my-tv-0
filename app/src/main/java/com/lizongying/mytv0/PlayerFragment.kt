@@ -231,7 +231,7 @@ class PlayerFragment : Fragment() {
                 requiresSecureDecoder,
                 requiresTunnelingDecoder
             )
-            Log.d(TAG, "Requested MIME type: $mimeType")
+
             if (mimeType == MimeTypes.VIDEO_H265 && !requiresSecureDecoder && !requiresTunnelingDecoder) {
                 if (infos.size > 0) {
                     val infosNew = infos.find { it.name == "c2.android.hevc.decoder" }
