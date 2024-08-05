@@ -1,8 +1,20 @@
 ## 更新日志
 
+### v1.3.1-kk
+- kk1
+    * Merge from 1.3.1
+    * Improve app startup speed
+    * Detect and display if channel(line 0) is IPv6
+    * Log video source metadata for debugging
+    * Update dependencies to latest version
+
+### v1.3.1
+
+* 恢復默認後，立即更新視頻源
+
 ### v1.3.0-kk
 - kk1
-  * merge from 1.3.0
+    * merge from 1.3.0
 
 ### v1.3.0
 

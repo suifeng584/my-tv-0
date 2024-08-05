@@ -39,6 +39,9 @@ object SP {
 
     private const val KEY_EPG = "epg"
 
+    const val DEFAULT_CONFIG_URL = "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
+    const val DEFAULT_CHANNEL = 1
+
     private const val KEY_CHANNEL_LIST_JSON = "channel_list_json"
 
     private lateinit var sp: SharedPreferences
@@ -86,10 +89,7 @@ object SP {
         set(value) = sp.edit().putBoolean(KEY_REPEAT_INFO, value).apply()
 
     var config: String?
-        get() = sp.getString(
-            KEY_CONFIG,
-            ""
-        )
+        get() = sp.getString(KEY_CONFIG, DEFAULT_CONFIG_URL)
         set(value) = sp.edit().putString(KEY_CONFIG, value).apply()
 
     var configAutoLoad: Boolean
@@ -97,7 +97,7 @@ object SP {
         set(value) = sp.edit().putBoolean(KEY_CONFIG_AUTO_LOAD, value).apply()
 
     var channel: Int
-        get() = sp.getInt(KEY_CHANNEL, 0)
+        get() = sp.getInt(KEY_CHANNEL, DEFAULT_CHANNEL)
         set(value) = sp.edit().putInt(KEY_CHANNEL, value).apply()
 
     var defaultLike: Boolean

@@ -66,10 +66,6 @@ object TVList {
             )
             list2Channel()
         }
-        if (SP.config.isNullOrEmpty()) {
-            SP.config =
-                "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
-        }
 
         if (SP.configAutoLoad) {
             SP.config?.let {
