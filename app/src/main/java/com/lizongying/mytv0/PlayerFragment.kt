@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import androidx.annotation.OptIn
 import androidx.fragment.app.Fragment
+import androidx.media3.common.Format
 import androidx.media3.common.MimeTypes
 import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
@@ -19,8 +20,10 @@ import androidx.media3.datasource.DataSource
 import androidx.media3.datasource.DataSpec
 import androidx.media3.datasource.DefaultHttpDataSource
 import androidx.media3.datasource.TransferListener
+import androidx.media3.exoplayer.DecoderReuseEvaluation
 import androidx.media3.exoplayer.DefaultRenderersFactory
 import androidx.media3.exoplayer.ExoPlayer
+import androidx.media3.exoplayer.analytics.AnalyticsListener
 import androidx.media3.exoplayer.mediacodec.MediaCodecSelector
 import androidx.media3.exoplayer.mediacodec.MediaCodecUtil
 import com.lizongying.mytv0.databinding.PlayerBinding
@@ -38,6 +41,8 @@ class PlayerFragment : Fragment() {
     private val aspectRatio = 16f / 9f
 
     private lateinit var mainActivity: MainActivity
+
+    private var metadata = Metadata()
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         mainActivity = activity as MainActivity
@@ -71,6 +76,7 @@ class PlayerFragment : Fragment() {
                 playerView.player = player
                 player?.repeatMode = REPEAT_MODE_ALL
                 player?.playWhenReady = true
+                player?.addAnalyticsListener(metadataListener)
                 player?.addListener(object : Player.Listener {
                     override fun onVideoSizeChanged(videoSize: VideoSize) {
                         val ratio = playerView.measuredWidth.div(playerView.measuredHeight)
@@ -270,6 +276,89 @@ class PlayerFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+    protected fun triggerMetadata(metadata: Metadata) {
+        //onMetadataListeners.forEach { it(metadata) }
+        Log.d(TAG, "metadata: $metadata")
+    }
+
+    private val metadataListener = @UnstableApi object : AnalyticsListener {
+        override fun onVideoInputFormatChanged(
+            eventTime: AnalyticsListener.EventTime,
+            format: Format,
+            decoderReuseEvaluation: DecoderReuseEvaluation?,
+        ) {
+            metadata = metadata.copy(
+                videoMimeType = format.sampleMimeType ?: "",
+                videoWidth = format.width,
+                videoHeight = format.height,
+                videoColor = format.colorInfo?.toLogString() ?: "",
+                // TODO 帧率、比特率目前是从tag中获取，有的返回空，后续需要实时计算
+                videoFrameRate = format.frameRate,
+                videoBitrate = format.bitrate,
+            )
+            triggerMetadata(metadata)
+        }
+
+        override fun onVideoDecoderInitialized(
+            eventTime: AnalyticsListener.EventTime,
+            decoderName: String,
+            initializedTimestampMs: Long,
+            initializationDurationMs: Long,
+        ) {
+            metadata = metadata.copy(videoDecoder = decoderName)
+            triggerMetadata(metadata)
+        }
+
+        override fun onAudioInputFormatChanged(
+            eventTime: AnalyticsListener.EventTime,
+            format: Format,
+            decoderReuseEvaluation: DecoderReuseEvaluation?,
+        ) {
+            metadata = metadata.copy(
+                audioMimeType = format.sampleMimeType ?: "",
+                audioChannels = format.channelCount,
+                audioSampleRate = format.sampleRate,
+            )
+            triggerMetadata(metadata)
+        }
+
+        override fun onAudioDecoderInitialized(
+            eventTime: AnalyticsListener.EventTime,
+            decoderName: String,
+            initializedTimestampMs: Long,
+            initializationDurationMs: Long,
+        ) {
+            metadata = metadata.copy(audioDecoder = decoderName)
+            triggerMetadata(metadata)
+        }
+    }
+
+    /** 元数据 */
+    data class Metadata(
+        /** 视频编码 */
+        val videoMimeType: String = "",
+        /** 视频宽度 */
+        val videoWidth: Int = 0,
+        /** 视频高度 */
+        val videoHeight: Int = 0,
+        /** 视频颜色 */
+        val videoColor: String = "",
+        /** 视频帧率 */
+        val videoFrameRate: Float = 0f,
+        /** 视频比特率 */
+        val videoBitrate: Int = 0,
+        /** 视频解码器 */
+        val videoDecoder: String = "",
+
+        /** 音频编码 */
+        val audioMimeType: String = "",
+        /** 音频通道 */
+        val audioChannels: Int = 0,
+        /** 音频采样率 */
+        val audioSampleRate: Int = 0,
+        /** 音频解码器 */
+        val audioDecoder: String = "",
+    )
 
     companion object {
         private const val TAG = "PlayerFragment"
