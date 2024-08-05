@@ -48,7 +48,7 @@ class SimpleServer(private val context: Context, port: Int) : NanoHTTPD(port) {
             map["postData"]?.let {
                 handler.post {
                     if (TVList.str2List(it)) {
-                        File(context.filesDir, TVList.FILE_NAME).writeText(it)
+                        //File(context.filesDir, TVList.FILE_NAME).writeText(it)
                         "频道导入成功".showToast()
                     } else {
                         "频道导入错误".showToast()

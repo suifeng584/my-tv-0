@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.core.net.toFile
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
 import com.lizongying.mytv0.R
 import com.lizongying.mytv0.SP
@@ -40,25 +41,31 @@ object TVList {
         groupModel.addTVListModel(TVListModel("我的收藏", 0))
         groupModel.addTVListModel(TVListModel("全部频道", 1))
 
-        appDirectory = context.filesDir
-        val file = File(appDirectory, FILE_NAME)
-        val str = if (file.exists()) {
-            Log.i(TAG, "read $file")
-            file.readText()
+        if (SP.channelListJson.isNullOrEmpty()) {
+            appDirectory = context.filesDir
+            val file = File(appDirectory, FILE_NAME)
+            val str = if (file.exists()) {
+                Log.i(TAG, "read $file")
+                file.readText()
+            } else {
+                Log.i(TAG, "read resource")
+                context.resources.openRawResource(R.raw.channels).bufferedReader()
+                    .use { it.readText() }
+            }
+            try {
+                str2List(str)
+            } catch (e: Exception) {
+                Log.e("", "error $e")
+                file.deleteOnExit()
+                Toast.makeText(context, "读取频道失败，请在菜单中进行设置", Toast.LENGTH_LONG).show()
+            }
         } else {
-            Log.i(TAG, "read resource")
-            context.resources.openRawResource(R.raw.channels).bufferedReader()
-                .use { it.readText() }
+            list = Gson().fromJson(
+                SP.channelListJson,
+                object : com.google.gson.reflect.TypeToken<List<TV>>() {}.type
+            )
+            list2Channel()
         }
-
-        try {
-            str2List(str)
-        } catch (e: Exception) {
-            Log.e("", "error $e")
-            file.deleteOnExit()
-            Toast.makeText(context, "读取频道失败，请在菜单中进行设置", Toast.LENGTH_LONG).show()
-        }
-
         if (SP.config.isNullOrEmpty()) {
             SP.config =
                 "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
@@ -110,14 +117,14 @@ object TVList {
                 val response = HttpClient.okHttpClient.newCall(request).execute()
 
                 if (response.isSuccessful) {
-                    val file = File(appDirectory, FILE_NAME)
-                    if (!file.exists()) {
-                        file.createNewFile()
-                    }
+//                    val file = File(appDirectory, FILE_NAME)
+//                    if (!file.exists()) {
+//                        file.createNewFile()
+//                    }
                     val str = response.body()!!.string()
                     withContext(Dispatchers.Main) {
                         if (str2List(str)) {
-                            file.writeText(str)
+//                            file.writeText(str)
                             SP.config = serverUrl
                             "频道导入成功".showToast()
 
@@ -196,6 +203,7 @@ object TVList {
                 try {
                     val type = object : com.google.gson.reflect.TypeToken<List<TV>>() {}.type
                     list = com.google.gson.Gson().fromJson(string, type)
+                    SP.channelListJson = string
                     Log.i(TAG, "导入频道 ${list.size}")
                 } catch (e: Exception) {
                     Log.i(TAG, "parse error $string")
@@ -271,6 +279,7 @@ object TVList {
                     l.add(t1)
                 }
                 list = l
+                SP.channelListJson = Gson().toJson(list)
                 Log.i(TAG, "导入频道 ${list.size}")
             }
 
@@ -319,10 +328,17 @@ object TVList {
                     l.add(tv)
                 }
                 list = l
+                SP.channelListJson = Gson().toJson(list)
                 Log.i(TAG, "导入频道 ${list.size}")
             }
         }
 
+        list2Channel()
+
+        return true
+    }
+
+    private fun list2Channel() {
         groupModel.clear2()
 
         val map: MutableMap<String, MutableList<TVModel>> = mutableMapOf()
@@ -358,8 +374,6 @@ object TVList {
 
         Log.i(TAG, "groupModel ${groupModel.size()}")
         groupModel.setChange()
-
-        return true
     }
 
     fun getTVModel(): TVModel {

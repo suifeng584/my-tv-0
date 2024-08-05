@@ -39,6 +39,8 @@ object SP {
 
     private const val KEY_EPG = "epg"
 
+    private const val KEY_CHANNEL_LIST_JSON = "channel_list_json"
+
     private lateinit var sp: SharedPreferences
 
     /**
@@ -84,8 +86,10 @@ object SP {
         set(value) = sp.edit().putBoolean(KEY_REPEAT_INFO, value).apply()
 
     var config: String?
-        get() = sp.getString(KEY_CONFIG,
-            "")
+        get() = sp.getString(
+            KEY_CONFIG,
+            ""
+        )
         set(value) = sp.edit().putString(KEY_CONFIG, value).apply()
 
     var configAutoLoad: Boolean
@@ -127,4 +131,8 @@ object SP {
     var epg: String?
         get() = sp.getString(KEY_EPG, "https://live.fanmingming.com/e.xml")
         set(value) = sp.edit().putString(KEY_EPG, value).apply()
+
+    var channelListJson: String?
+        get() = sp.getString(KEY_CHANNEL_LIST_JSON, "")
+        set(value) = sp.edit().putString(KEY_CHANNEL_LIST_JSON, value).apply()
 }
