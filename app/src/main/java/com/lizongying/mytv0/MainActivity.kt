@@ -19,8 +19,8 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentActivity
-import com.lizongying.mytv0.models.TVGroupModel
 import com.lizongying.mytv0.models.TVList
+import java.util.Locale
 
 
 class MainActivity : FragmentActivity() {
@@ -124,6 +124,10 @@ class MainActivity : FragmentActivity() {
         showTime()
     }
 
+    fun update() {
+        menuFragment.update()
+    }
+
     fun ready(tag: String) {
         Log.i(TAG, "ready $tag")
         ok++
@@ -142,38 +146,37 @@ class MainActivity : FragmentActivity() {
 //                TVList.groupModel.setPosition(0)
 //                val tvModel = TVList.listModel.find { it.like.value as Boolean }
 //                TVList.setPosition(tvModel?.tv?.id ?: 0)
-//                "播放收藏频道".showToast(Toast.LENGTH_LONG)
+//                "播放收藏频道".showToast()
 //            }
 
             if (SP.channel > 0) {
                 if (SP.channel < TVList.listModel.size) {
                     TVList.setPosition(SP.channel - 1)
-                    "播放默认频道".showToast(Toast.LENGTH_LONG)
+                    R.string.play_default_channel.showToast()
                 } else {
                     SP.channel = 0
                     TVList.setPosition(0)
-                    "默认频道超出频道列表范围，已自动设置为0".showToast(Toast.LENGTH_LONG)
+                    R.string.default_channel_out_of_range.showToast()
                 }
             } else {
                 if (!TVList.setPosition(SP.position)) {
                     TVList.setPosition(0)
-                    "上次频道超出频道列表范围，已自动设置为0".showToast(Toast.LENGTH_LONG)
+                    R.string.last_channel_out_of_range.showToast()
                 } else {
-                    "播放上次频道".showToast(Toast.LENGTH_LONG)
+                    R.string.play_last_channel.showToast()
                 }
             }
 
             TVList.groupModel.isInLikeMode = SP.defaultLike;
             if (TVList.groupModel.isInLikeMode) {
-                Toast.makeText(this, "收藏模式", Toast.LENGTH_SHORT).show()
+                R.string.favorite_mode.showToast()
+            } else {
+                R.string.standard_mode.showToast()
             }
 
             // TODO group position
 
-            val port = PortUtil.findFreePort()
-            if (port != -1) {
-                server = SimpleServer(this, port)
-            }
+            server = SimpleServer(this)
         }
     }
 
@@ -189,7 +192,7 @@ class MainActivity : FragmentActivity() {
                 ) {
                     hideFragment(loadingFragment)
                     if (tvModel.errInfo.value == "") {
-                        Log.i(TAG, "${tvModel.tv.title} 播放中")
+                        Log.i(TAG, "${tvModel.tv.title} playing")
                         hideFragment(errorFragment)
                         showFragment(playerFragment)
                     } else {
@@ -355,7 +358,7 @@ class MainActivity : FragmentActivity() {
                 menuFragment.updateList(currentGroup)
             }
         } else {
-            Toast.makeText(this, "频道不存在", Toast.LENGTH_LONG).show()
+            R.string.channel_not_exist.showToast()
         }
     }
 
@@ -470,13 +473,17 @@ class MainActivity : FragmentActivity() {
     }
 
     private val hideSetting = Runnable {
-        if (!settingFragment.isHidden) {
-            if (!supportFragmentManager.isDestroyed) {
-                supportFragmentManager.beginTransaction().hide(settingFragment).commitNow()
-            } else {
-                Log.e(TAG, "SupportFragmentManager is destroyed!")
+        if (!isFinishing && !isDestroyed && !supportFragmentManager.isDestroyed) {
+            if (settingFragment.isAdded && !settingFragment.isHidden) {
+                try {
+                    supportFragmentManager.beginTransaction()
+                        .hide(settingFragment)
+                        .commitNow()
+                    showTime()
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
             }
-            showTime()
         }
     }
 
@@ -541,7 +548,7 @@ class MainActivity : FragmentActivity() {
         }
 
         doubleBackToExitPressedOnce = true
-        Toast.makeText(this, "再按一次退出", Toast.LENGTH_SHORT).show()
+        R.string.press_again_to_exit.showToast()
 
         Handler(Looper.getMainLooper()).postDelayed({
             doubleBackToExitPressedOnce = false
@@ -709,6 +716,14 @@ class MainActivity : FragmentActivity() {
     override fun onDestroy() {
         super.onDestroy()
         server?.stop()
+    }
+
+    override fun attachBaseContext(base: Context) {
+        //Locale.SIMPLIFIED_CHINESE
+        //Locale.TRADITIONAL_CHINESE
+        val locale = Locale.TRADITIONAL_CHINESE
+        val context = LocaleContextWrapper.wrap(base, locale)
+        super.attachBaseContext(context)
     }
 
     companion object {

@@ -3,7 +3,6 @@ package com.lizongying.mytv0.models
 import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.core.net.toFile
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -39,7 +38,7 @@ object TVList {
         _position.value = 0
 
         groupModel.addTVListModel(TVListModel("我的收藏", 0))
-        groupModel.addTVListModel(TVListModel("全部频道", 1))
+        groupModel.addTVListModel(TVListModel("全部頻道", 1))
 
         if (SP.channelListJson.isNullOrEmpty()) {
             appDirectory = context.filesDir
@@ -52,12 +51,13 @@ object TVList {
                 context.resources.openRawResource(R.raw.channels).bufferedReader()
                     .use { it.readText() }
             }
+
             try {
                 str2List(str)
             } catch (e: Exception) {
-                Log.e("", "error $e")
+                e.printStackTrace()
                 file.deleteOnExit()
-                Toast.makeText(context, "读取频道失败，请在菜单中进行设置", Toast.LENGTH_LONG).show()
+                R.string.channel_read_error.showToast()
             }
         } else {
             list = Gson().fromJson(
@@ -80,7 +80,6 @@ object TVList {
     }
 
     private suspend fun updateEPG() {
-//        "EPG开始获取".showToast()
         try {
             val request = okhttp3.Request.Builder().url(epg!!).build()
             val response = HttpClient.okHttpClient.newCall(request).execute()
@@ -92,16 +91,14 @@ object TVList {
                     for (m in listModel) {
                         epg[m.tv.name]?.let { m.setEpg(it) }
                     }
-                    "EPG解析成功".showToast()
                 }
-                "EPG获取成功".showToast()
             } else {
-                Log.e("", "request status ${response.code()}")
-                "EPG状态错误".showToast()
+                Log.e(TAG, "EPG ${response.code()}")
+                R.string.epg_status_err.showToast()
             }
         } catch (e: Exception) {
-            Log.e("", "request error $e")
-            "EPG请求错误".showToast()
+            e.printStackTrace()
+            R.string.epg_request_err.showToast()
         }
     }
 
@@ -122,7 +119,7 @@ object TVList {
                         if (str2List(str)) {
 //                            file.writeText(str)
                             SP.config = serverUrl
-                            "频道导入成功".showToast()
+                            R.string.channel_import_success.showToast()
 
                             if (!epg.isNullOrEmpty()) {
                                 CoroutineScope(Dispatchers.IO).launch {
@@ -130,22 +127,25 @@ object TVList {
                                 }
                             }
                         } else {
-                            "频道导入错误".showToast()
+                            R.string.channel_import_error.showToast()
                         }
                     }
                 } else {
-                    Log.e("", "request status ${response.code()}")
-                    "频道状态错误".showToast()
+                    Log.e(TAG, "Request status ${response.code()}")
+                    R.string.channel_status_error.showToast()
                 }
             } catch (e: JsonSyntaxException) {
+                e.printStackTrace()
                 Log.e("JSON Parse Error", e.toString())
-                "频道格式错误".showToast()
+                R.string.channel_format_error.showToast()
             } catch (e: NullPointerException) {
+                e.printStackTrace()
                 Log.e("Null Pointer Error", e.toString())
-                "无法读取频道".showToast()
+                R.string.channel_read_error.showToast()
             } catch (e: Exception) {
-                Log.e("", "request error $e")
-                "频道请求错误".showToast()
+                e.printStackTrace()
+                Log.e(TAG, "Request error $e")
+                R.string.channel_request_error.showToast()
             }
         }
     }
@@ -160,24 +160,23 @@ object TVList {
             val file = uri.toFile()
             Log.i(TAG, "file $file")
             val str = if (file.exists()) {
-                Log.i(TAG, "read $file")
                 file.readText()
             } else {
-                "文件不存在".showToast(Toast.LENGTH_LONG)
+                R.string.file_not_exist.showToast()
                 return
             }
 
             try {
                 if (str2List(str)) {
                     SP.config = uri.toString()
-                    "频道导入成功".showToast(Toast.LENGTH_LONG)
+                    R.string.channel_import_success.showToast()
                 } else {
-                    "频道导入失败".showToast(Toast.LENGTH_LONG)
+                    R.string.channel_import_error.showToast()
                 }
             } catch (e: Exception) {
-                Log.e("", "error $e")
+                e.printStackTrace()
                 file.deleteOnExit()
-                "读取频道失败".showToast(Toast.LENGTH_LONG)
+                R.string.channel_read_error.showToast()
             }
         } else {
             update(uri.toString())

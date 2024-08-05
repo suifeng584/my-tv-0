@@ -89,6 +89,14 @@ fun String.showToast(duration: Int = Toast.LENGTH_SHORT) {
     MyTVApplication.getInstance().toast(this, duration)
 }
 
+fun Int.getString(): String {
+    return MyTVApplication.getInstance().getString(this)
+}
+
+fun Int.showToast(duration: Int = Toast.LENGTH_SHORT) {
+    this.getString().showToast(duration)
+}
+
 fun String.isIPv6(): Boolean {
     val urlPattern = Pattern.compile(
         "^((http|https)://)?(\\[[0-9a-fA-F:]+])(:[0-9]+)?(/.*)?$"

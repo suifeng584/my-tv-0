@@ -1,12 +1,19 @@
 ## 更新日志
 
-### v1.3.1-kk
+
+### v1.3.2-kk
 - kk1
-    * Merge from 1.3.1
+    * Merge from 1.3.2
     * Improve app startup speed
     * Detect and display if channel(line 0) is IPv6
     * Log video source metadata for debugging
     * Update dependencies to latest version
+
+### v1.3.2
+
+* 固定遠程配置端口為34567
+* 優化配置樣式
+* 可配置是否顯示全部頻道
 
 ### v1.3.1
 
