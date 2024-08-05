@@ -69,7 +69,9 @@ class InfoFragment : Fragment() {
 
     fun show(tvViewModel: TVModel) {
         val context = requireContext()
-        binding.title.text = tvViewModel.tv.title
+        //TODO need get current source url
+        val ipv6Text = tvViewModel.tv.uris[0].isIPv6().let { if (it) " | IPV6" else "" }
+        binding.title.text = "${tvViewModel.tv.title}$ipv6Text"
 
         when (tvViewModel.tv.title) {
             else -> {
