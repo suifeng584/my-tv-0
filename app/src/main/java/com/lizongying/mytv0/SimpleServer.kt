@@ -13,6 +13,8 @@ import java.io.BufferedReader
 import java.io.File
 import java.io.IOException
 import java.io.InputStreamReader
+import java.nio.charset.StandardCharsets
+
 
 class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
     private val handler = Handler(Looper.getMainLooper())
@@ -29,23 +31,26 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
 
     override fun serve(session: IHTTPSession): Response {
         return when (session.uri) {
-            "/api/channels" -> handleChannelsRequest(session)
-            "/api/uri" -> handleUriRequest(session)
-            "/api/channel" -> handleChannel(session)
+            "/api/channels" -> handleChannelsFromFile(session)
+            "/api/uri" -> handleChannelsFromUri(session)
+            "/api/channel" -> handleDefaultChannel(session)
             "/api/proxy" -> handleProxy(session)
             "/api/settings" -> handleSettings()
             else -> handleStaticContent(session)
         }
     }
 
-    private fun handleChannelsRequest(session: IHTTPSession): Response {
+    private fun handleChannelsFromFile(session: IHTTPSession): Response {
+        R.string.start_config_channel.showToast()
+        val response = ""
         try {
             val map = HashMap<String, String>()
             session.parseBody(map)
             map["postData"]?.let {
                 handler.post {
                     if (TVList.str2List(it)) {
-                        //File(context.filesDir, TVList.FILE_NAME).writeText(it)
+                        File(context.filesDir, TVList.FILE_NAME).writeText(it)
+                        SP.config = "file://"
                         R.string.channel_import_success.showToast()
                     } else {
                         R.string.channel_import_error.showToast()
@@ -60,7 +65,6 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
                 e.message
             )
         }
-        val response = ""
         return newFixedLengthResponse(Response.Status.OK, "text/plain", response)
     }
 
@@ -82,7 +86,9 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
         var uri: String = "",
     )
 
-    private fun handleUriRequest(session: IHTTPSession): Response {
+    private fun handleChannelsFromUri(session: IHTTPSession): Response {
+        R.string.start_config_channel.showToast()
+        val response = ""
         try {
             val map = HashMap<String, String>()
             session.parseBody(map)
@@ -101,7 +107,6 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
                 "SERVER INTERNAL ERROR: IOException: " + e.message
             )
         }
-        val response = "频道读取中"
         return newFixedLengthResponse(Response.Status.OK, "text/plain", response)
     }
 
@@ -109,7 +114,9 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
         val channel: Int,
     )
 
-    private fun handleChannel(session: IHTTPSession): Response {
+    private fun handleDefaultChannel(session: IHTTPSession): Response {
+        R.string.start_set_default_channel.showToast()
+        val response = ""
         try {
             val map = HashMap<String, String>()
             session.parseBody(map)
@@ -132,7 +139,6 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
                 e.message
             )
         }
-        val response = ""
         return newFixedLengthResponse(Response.Status.OK, "text/plain", response)
     }
 
@@ -201,7 +207,7 @@ class SimpleServer(private val context: Context) : NanoHTTPD(PORT) {
 
     private fun loadHtmlFromResource(resourceId: Int): String {
         val inputStream = context.resources.openRawResource(resourceId)
-        return inputStream.bufferedReader(Charsets.UTF_8).use { it.readText() }
+        return inputStream.bufferedReader(StandardCharsets.UTF_8).use { it.readText() }
     }
 
     companion object {

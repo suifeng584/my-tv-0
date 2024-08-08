@@ -8,6 +8,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.google.gson.Gson
 import com.google.gson.JsonSyntaxException
+import com.lizongying.mytv0.ISP
 import com.lizongying.mytv0.R
 import com.lizongying.mytv0.SP
 import com.lizongying.mytv0.requests.HttpClient
@@ -30,9 +31,15 @@ object TVList {
     val groupModel = TVGroupModel()
     private var epg = SP.epg
 
+    private var isp = ISP.UNKNOWN
+
     private val _position = MutableLiveData<Int>()
     val position: LiveData<Int>
         get() = _position
+
+    fun setISP(isp: ISP) {
+        this.isp = isp
+    }
 
     fun init(context: Context) {
         _position.value = 0
@@ -69,7 +76,9 @@ object TVList {
 
         if (SP.configAutoLoad) {
             SP.config?.let {
-                update(it)
+                if (it.startsWith("http")) {
+                    update(it)
+                }
             }
         } else if (!epg.isNullOrEmpty()) {
             CoroutineScope(Dispatchers.IO).launch {
@@ -231,7 +240,8 @@ object TVList {
                         val title = info.last().trim()
                         var name = nameRegex.find(info.first())?.groupValues?.get(1)?.trim()
                         name = name ?: title
-                        val group = groupRegex.find(info.first())?.groupValues?.get(1)?.trim()
+                        var group = groupRegex.find(info.first())?.groupValues?.get(1)?.trim()
+                        group = group ?: ""
                         val logo = logRegex.find(info.first())?.groupValues?.get(1)?.trim()
                         val uris =
                             if (index + 1 < lines.size) listOf(lines[index + 1].trim()) else emptyList()
@@ -244,15 +254,15 @@ object TVList {
                             "",
                             uris,
                             mapOf(),
-                            group ?: "",
+                            group,
                             SourceType.UNKNOWN,
                             listOf(),
                         )
 
-                        if (!tvMap.containsKey(name)) {
-                            tvMap[name] = listOf()
+                        if (!tvMap.containsKey(group + name)) {
+                            tvMap[group + name] = listOf()
                         }
-                        tvMap[name] = tvMap[name]!! + tv
+                        tvMap[group + name] = tvMap[group + name]!! + tv
                     }
                 }
                 for ((_, tv) in tvMap) {
@@ -298,10 +308,10 @@ object TVList {
                             val title = arr.first().trim()
                             val uris = arr.drop(1)
 
-                            if (!tvMap.containsKey(title)) {
-                                tvMap[title] = listOf()
+                            if (!tvMap.containsKey(group + title)) {
+                                tvMap[group + title] = listOf()
                             }
-                            tvMap[title] = tvMap[title]!! + uris
+                            tvMap[group + title] = tvMap[group + title]!! + uris
                         }
                     }
                 }
@@ -309,7 +319,7 @@ object TVList {
                     val tv = TV(
                         -1,
                         "",
-                        title,
+                        title.removePrefix(group),
                         "",
                         "",
                         "",
@@ -334,7 +344,7 @@ object TVList {
     }
 
     private fun list2Channel() {
-        groupModel.clear2()
+        groupModel.clearNotFilter()
 
         val map: MutableMap<String, MutableList<TVModel>> = mutableMapOf()
         for (v in list) {
@@ -365,9 +375,8 @@ object TVList {
         listModel = listModelNew
 
         // 全部频道
-        groupModel.getTVListModel(1)?.setTVListModel(listModel)
+        (groupModel.tvGroupModel.value as List<TVListModel>)[1].setTVListModel(listModel)
 
-        Log.i(TAG, "groupModel ${groupModel.size()}")
         groupModel.setChange()
     }
 
