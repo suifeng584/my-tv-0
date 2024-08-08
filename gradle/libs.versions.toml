@@ -23,7 +23,7 @@ coroutines = "1.8.1"
 
 android-gradle-plugin = "8.3.2"
 kotlin-android = "2.0.0"
-appcompat = "1.7.0"
+appcompat = "1.6.1" #api17+: 1.6.1
 
 [libraries]
 desugar_jdk_libs = { module = "com.android.tools:desugar_jdk_libs", version.ref = "desugar_jdk_libs" }

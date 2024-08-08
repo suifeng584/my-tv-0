@@ -48,7 +48,7 @@ class TVGroupModel : ViewModel() {
             (_tvGroupModel.value as List<TVListModel>)[1]
         )
         setPosition(0)
-        (_tvGroupModel.value as List<TVListModel>)[1].clear()
+        (_tvGroupModel.value as List<TVListModel>)[1].clear2()
     }
 
     fun clear2() {

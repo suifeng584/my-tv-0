@@ -16,4 +16,5 @@
 local.properties
 files
 .kotlin/
-app/release/
+/release/
+.vscode

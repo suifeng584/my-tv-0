@@ -41,7 +41,7 @@ object SP {
 
     private const val KEY_EPG = "epg"
 
-    const val DEFAULT_CONFIG_URL = "https://ghproxy.org/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
+    const val DEFAULT_CONFIG_URL = "https://mirror.ghproxy.com/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
     const val DEFAULT_CHANNEL = 1
     const val DEFAULT_SHOW_ALL_CHANNELS = false
 
