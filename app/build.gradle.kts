@@ -73,8 +73,57 @@ fun getVersionName(): String {
     }
 }
 
+task("modifySource") {
+    doLast {
+        val net = project.findProperty("net") ?: ""
+        println("net: $net")
+
+        val channels = when (net) {
+            "ipv6" -> "assets/ipv6.txt"
+            "mobile" -> "assets/mobile.txt"
+            else -> "assets/common.txt"
+        }
+
+        if (channels.isNotEmpty()) {
+            val f = file("src/main/res/raw/channels.txt")
+            f.writeText(file(channels).readText())
+        }
+
+        val url = when (net) {
+            "ipv6" -> "DEFAULT_CONFIG_URL = \"https://live.fanmingming.com/tv/m3u/ipv6.m3u\""
+            "mobile" -> "DEFAULT_CONFIG_URL = \"https://live.fanmingming.com/tv/m3u/itv.m3u\""
+            else -> ""
+        }
+
+        if (url.isNotEmpty()) {
+            val f = file("src/main/java/com/lizongying/mytv0/SP.kt")
+            f.writeText(f.readText().replace("DEFAULT_CONFIG_URL = \"\"", url))
+        }
+    }
+}
+
+tasks.whenTaskAdded {
+    if (name == "assembleRelease") {
+        dependsOn("modifySource")
+        doLast {
+            val net = project.findProperty("net") ?: ""
+            println("net: $net")
+
+            val url = when (net) {
+                "ipv6" -> "DEFAULT_CONFIG_URL = \"https://live.fanmingming.com/tv/m3u/ipv6.m3u\""
+                "mobile" -> "DEFAULT_CONFIG_URL = \"https://live.fanmingming.com/tv/m3u/itv.m3u\""
+                else -> ""
+            }
+
+            if (url.isNotEmpty()) {
+                val f = file("src/main/java/com/lizongying/mytv0/SP.kt")
+                f.writeText(f.readText().replace(url, "DEFAULT_CONFIG_URL = \"\""))
+            }
+        }
+    }
+}
+
 dependencies {
-    implementation(libs.appcompat)
     // For AGP 7.4+
     coreLibraryDesugaring(libs.desugar.jdk.libs)
 
@@ -98,8 +147,8 @@ dependencies {
     implementation(libs.core.ktx)
     implementation(libs.coroutines)
 
-    implementation(libs.multidex)
     implementation(libs.constraintlayout)
+    implementation(libs.appcompat)
     implementation(libs.recyclerview)
 
     implementation(files("libs/lib-decoder-ffmpeg-release.aar"))

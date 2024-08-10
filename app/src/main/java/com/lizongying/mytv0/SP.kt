@@ -44,6 +44,7 @@ object SP {
     const val DEFAULT_CONFIG_URL = "https://mirror.ghproxy.com/https://raw.githubusercontent.com/YueChan/Live/main/IPTV.m3u"
     const val DEFAULT_CHANNEL = 1
     const val DEFAULT_SHOW_ALL_CHANNELS = false
+    const val DEFAULT_COMPACT_MEME = true
 
     private const val KEY_CHANNEL_LIST_JSON = "channel_list_json"
 
@@ -102,6 +103,10 @@ object SP {
     var channel: Int
         get() = sp.getInt(KEY_CHANNEL, DEFAULT_CHANNEL)
         set(value) = sp.edit().putInt(KEY_CHANNEL, value).apply()
+
+    var compactMenu: Boolean
+        get() = sp.getBoolean(KEY_COMPACT_MEME, DEFAULT_COMPACT_MEME)
+        set(value) = sp.edit().putBoolean(KEY_COMPACT_MEME, value).apply()
 
     var showAllChannels: Boolean
         get() = sp.getBoolean(KEY_SHOW_ALL_CHANNELS, DEFAULT_SHOW_ALL_CHANNELS)

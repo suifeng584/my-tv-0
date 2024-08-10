@@ -128,6 +128,10 @@ class MainActivity : AppCompatActivity() {
         menuFragment.update()
     }
 
+    fun updateMenuSize() {
+        menuFragment.updateSize()
+    }
+
     fun ready(tag: String) {
         Log.i(TAG, "ready $tag")
         ok++

@@ -10,8 +10,8 @@ import androidx.fragment.app.FragmentActivity
 import com.lizongying.mytv0.requests.HttpClient
 import com.lizongying.mytv0.requests.ReleaseRequest
 import com.lizongying.mytv0.requests.ReleaseResponse
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -32,14 +32,14 @@ class UpdateManager(
 
     fun checkAndUpdate() {
         Log.i(TAG, "checkAndUpdate")
-        GlobalScope.launch(Dispatchers.Main) {
+        CoroutineScope(Dispatchers.Main).launch {
             var text = "版本获取失败"
             var update = false
             try {
                 release = releaseRequest.getRelease()
                 Log.i(TAG, "versionCode $versionCode ${release?.version_code}")
                 if (release?.version_code != null) {
-                    if (release?.version_code!! > versionCode) {
+                    if (release?.version_code!! >= versionCode) {
                         text = "最新版本：${release?.version_name}"
                         update = true
                     } else {
@@ -72,7 +72,7 @@ class UpdateManager(
         val file = File(downloadDir, apkFileName)
         file.parentFile?.mkdirs()
 
-        downloadJob = GlobalScope.launch(Dispatchers.IO) {
+        downloadJob = CoroutineScope(Dispatchers.Main).launch {
             downloadWithRetry(url, file)
         }
     }
@@ -91,6 +91,7 @@ class UpdateManager(
             }
         }
     }
+
     private suspend fun downloadWithRetry(url: String, file: File, maxRetries: Int = 3) {
         var retries = 0
         while (retries < maxRetries) {
@@ -171,22 +172,20 @@ class UpdateManager(
         }
     }
 
+    companion object {
+        private const val TAG = "UpdateManager"
+        private const val BUFFER_SIZE = 8192
+    }
+
     override fun onConfirm() {
         Log.i(TAG, "onConfirm $release")
         release?.let { startDownload(it) }
     }
 
     override fun onCancel() {
-        // Handle cancellation if needed
     }
 
     fun destroy() {
         downloadJob?.cancel()
-        // Additional cleanup if needed
-    }
-
-    companion object {
-        private const val TAG = "UpdateManager"
-        private const val BUFFER_SIZE = 8192
     }
 }
