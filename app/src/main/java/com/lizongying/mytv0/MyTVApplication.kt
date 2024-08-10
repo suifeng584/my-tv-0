@@ -8,9 +8,10 @@ import android.os.Looper
 import android.util.DisplayMetrics
 import android.view.WindowManager
 import android.widget.Toast
+import androidx.multidex.MultiDexApplication
 import java.util.Locale
 
-class MyTVApplication : Application() {
+class MyTVApplication : MultiDexApplication() {
 
     companion object {
         private const val TAG = "MyTVApplication"

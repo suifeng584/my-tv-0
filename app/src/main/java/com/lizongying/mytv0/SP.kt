@@ -33,7 +33,9 @@ object SP {
 
     private const val KEY_DEFAULT_LIKE = "default_like"
 
-    private const val KEY_SHOW_ALL_CHANNELS = "show all channelS"
+    private const val KEY_SHOW_ALL_CHANNELS = "show_all_channelS"
+
+    private const val KEY_COMPACT_MEME = "compact_meme"
 
     private const val KEY_LIKE = "like"
 

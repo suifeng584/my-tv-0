@@ -12,6 +12,7 @@ import com.lizongying.mytv0.requests.ReleaseRequest
 import com.lizongying.mytv0.requests.ReleaseResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -72,7 +73,7 @@ class UpdateManager(
         val file = File(downloadDir, apkFileName)
         file.parentFile?.mkdirs()
 
-        downloadJob = CoroutineScope(Dispatchers.Main).launch {
+        downloadJob = GlobalScope.launch(Dispatchers.IO) {
             downloadWithRetry(url, file)
         }
     }
