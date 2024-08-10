@@ -92,6 +92,10 @@ class MyTVApplication : MultiDexApplication() {
         return (px * ratio + 0.5f).toInt()
     }
 
+    fun px2Px2(px: Int): Int {
+        return (px * ratio * density + 0.5f).toInt()
+    }
+
     fun px2PxFont(px: Float): Float {
         return (px * ratio / scale).toFloat()
     }

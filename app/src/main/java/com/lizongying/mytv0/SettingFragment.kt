@@ -176,9 +176,9 @@ class SettingFragment : Fragment() {
         binding.version.layoutParams = layoutParamsVersion
 
         val btnWidth =
-            application.px2Px(binding.confirmConfig.layoutParams.width)
+            application.px2Px2(binding.confirmConfig.layoutParams.width)
         val btnHeight =
-            application.px2Px(binding.confirmConfig.layoutParams.height)
+            application.px2Px2(binding.confirmConfig.layoutParams.height)
         val btnTextSize =
             application.px2PxFont(binding.confirmConfig.textSize)
         val btnLayoutParams =
@@ -186,7 +186,7 @@ class SettingFragment : Fragment() {
         btnLayoutParams.marginEnd = application.px2Px(binding.confirmConfig.marginEnd)
 
         val txtWidth =
-            application.px2Px(binding.versionName.layoutParams.width)
+            application.px2Px2(binding.versionName.layoutParams.width)
         val txtTextSize =
             application.px2PxFont(binding.versionName.textSize)
 
