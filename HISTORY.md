@@ -1,5 +1,11 @@
 ## 更新日志
 
+### v1.3.5-kk
+- kk1
+  * Merge from 1.3.5
+  * Imporved compatibility
+  * Change ghproxy.org to mirror.ghproxy.com
+
 ### v1.3.5
 
 * 可配置緊湊的菜單
