@@ -74,19 +74,25 @@ fun getVersionName(): String {
 }
 
 task("modifySource") {
+    val net = project.findProperty("net") ?: ""
+    println("net: $net")
+
+    val channels = when (net) {
+        "ipv6" -> "assets/ipv6.txt"
+        "mobile" -> "assets/mobile.txt"
+        else -> "assets/common.txt"
+    }
+
+    println("channels: $channels")
+
+    inputs.file(channels)
+    outputs.file("src/main/res/raw/channels.txt")
     doLast {
-        val net = project.findProperty("net") ?: ""
-        println("net: $net")
-
-        val channels = when (net) {
-            "ipv6" -> "assets/ipv6.txt"
-            "mobile" -> "assets/mobile.txt"
-            else -> "assets/common.txt"
-        }
-
         if (channels.isNotEmpty()) {
-            val f = file("src/main/res/raw/channels.txt")
-            f.writeText(file(channels).readText())
+            val sourceFile = file(channels)
+            val targetFile = file("src/main/res/raw/channels.txt")
+            targetFile.writeText(sourceFile.readText())
+            println(targetFile.readText())
         }
 
         val url = when (net) {
@@ -121,6 +127,16 @@ tasks.whenTaskAdded {
             }
         }
     }
+
+    if (listOf(
+            "packageReleaseResources",
+            "mergeReleaseResources",
+            "generateReleaseResources",
+            "mapReleaseSourceSetPaths",
+        ).contains(name)
+    ) {
+        dependsOn("modifySource")
+    }
 }
 
 dependencies {
@@ -150,6 +166,7 @@ dependencies {
     implementation(libs.constraintlayout)
     implementation(libs.appcompat)
     implementation(libs.recyclerview)
+    implementation(libs.lifecycle.viewmodel)
 
     implementation(files("libs/lib-decoder-ffmpeg-release.aar"))
 

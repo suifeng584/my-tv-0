@@ -8,7 +8,6 @@ import com.lizongying.mytv0.ISP.CHINA_MOBILE
 import com.lizongying.mytv0.ISP.CHINA_TELECOM
 import com.lizongying.mytv0.ISP.CHINA_UNICOM
 import com.lizongying.mytv0.ISP.UNKNOWN
-import com.lizongying.mytv0.models.TVList
 import com.lizongying.mytv0.requests.TimeResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -84,7 +83,7 @@ object Utils {
     }
 
     init {
-        CoroutineScope(Dispatchers.IO).launch(Dispatchers.IO) {
+        CoroutineScope(Dispatchers.IO).launch {
             init()
         }
     }

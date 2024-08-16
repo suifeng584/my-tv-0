@@ -17,7 +17,6 @@ import androidx.media3.exoplayer.source.ProgressiveMediaSource
 import com.lizongying.mytv0.SP
 import kotlin.math.max
 import kotlin.math.min
-import kotlin.random.Random
 
 class TVModel(var tv: TV) : ViewModel() {
     private val _position = MutableLiveData<Int>()
@@ -28,7 +27,18 @@ class TVModel(var tv: TV) : ViewModel() {
     var retryMaxTimes = 3
     var programUpdateTime = 0L
 
-    var groupIndex = 0
+    private var _groupIndex = 0
+    val groupIndex: Int
+        get() = if (SP.showAllChannels || _groupIndex == 0) _groupIndex else _groupIndex - 1
+
+    fun setGroupIndex(index: Int) {
+        _groupIndex = index
+    }
+
+    fun getGroupIndexInAll(): Int {
+        return _groupIndex
+    }
+
     var listIndex = 0
 
     private var sources: MutableList<SourceType> =
@@ -97,7 +107,20 @@ class TVModel(var tv: TV) : ViewModel() {
         get() = _videoIndex
 
     private var userAgent = ""
-    lateinit var mediaItem: MediaItem
+
+    // TODO Maybe _mediaItem has not been initialized when play
+    private lateinit var _mediaItem: MediaItem
+
+    fun getMediaItem(): MediaItem {
+        if (::_mediaItem.isInitialized) {
+            return _mediaItem
+        } else {
+            // TODO Maybe url is null
+            _mediaItem = MediaItem.fromUri(getVideoUrl()!!)
+            return _mediaItem
+        }
+    }
+
     private lateinit var httpDataSource: DefaultHttpDataSource.Factory
 
     init {
@@ -134,7 +157,7 @@ class TVModel(var tv: TV) : ViewModel() {
             }
         }
 
-        mediaItem = MediaItem.fromUri(uri.toString())
+        _mediaItem = MediaItem.fromUri(uri.toString())
 
         if (path.lowercase().endsWith(".m3u8")) {
             addSource(SourceType.HLS)
@@ -187,20 +210,23 @@ class TVModel(var tv: TV) : ViewModel() {
         if (sources.isEmpty()) {
             return null
         }
+        if (!::_mediaItem.isInitialized) {
+            return null
+        }
         sourceIndex = max(0, sourceIndex)
         sourceIndex = min(sourceIndex, sources.size - 1)
 
         return when (sources[sourceIndex]) {
-            SourceType.HLS -> HlsMediaSource.Factory(httpDataSource).createMediaSource(mediaItem)
+            SourceType.HLS -> HlsMediaSource.Factory(httpDataSource).createMediaSource(_mediaItem)
             SourceType.RTSP -> if (userAgent.isEmpty()) {
-                RtspMediaSource.Factory().createMediaSource(mediaItem)
+                RtspMediaSource.Factory().createMediaSource(_mediaItem)
             } else {
-                RtspMediaSource.Factory().setUserAgent(userAgent).createMediaSource(mediaItem)
+                RtspMediaSource.Factory().setUserAgent(userAgent).createMediaSource(_mediaItem)
             }
 
-            SourceType.DASH -> DashMediaSource.Factory(httpDataSource).createMediaSource(mediaItem)
+            SourceType.DASH -> DashMediaSource.Factory(httpDataSource).createMediaSource(_mediaItem)
             SourceType.PROGRESSIVE -> ProgressiveMediaSource.Factory(httpDataSource)
-                .createMediaSource(mediaItem)
+                .createMediaSource(_mediaItem)
 
             else -> null
         }

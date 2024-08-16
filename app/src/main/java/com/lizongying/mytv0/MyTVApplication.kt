@@ -64,6 +64,8 @@ class MyTVApplication : MultiDexApplication() {
             shouldHeight = height
             shouldWidth = (height * 16.0 / 9.0).toInt()
         }
+
+        Thread.setDefaultUncaughtExceptionHandler(MyTVExceptionHandler(this))
     }
 
     fun getDisplayMetrics(): DisplayMetrics {
