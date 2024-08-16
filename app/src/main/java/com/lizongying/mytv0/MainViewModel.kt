@@ -1,5 +1,3 @@
-package com.lizongying.mytv0.models
-
 import android.content.Context
 import android.net.Uri
 import android.util.Log
@@ -24,11 +22,9 @@ import com.lizongying.mytv0.showToast
 import io.github.lizongying.Gua
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
-
 
 class MainViewModel : ViewModel() {
     val FILE_NAME = "channels.txt"
@@ -97,11 +93,10 @@ class MainViewModel : ViewModel() {
                 R.string.channel_read_error.showToast()
             }
         } else {
-            list = Gson().fromJson(
-                SP.channelListJson,
-                object : com.google.gson.reflect.TypeToken<List<TV>>() {}.type
-            )
-            list2Channel()
+            Gson().fromJson<List<TV>?>(
+                /* json = */ SP.channelListJson,
+                /* typeOfT = */ object : com.google.gson.reflect.TypeToken<List<TV>>() {}.type
+            ).apply { list2Channel(this) }
         }
         _channelsOk.value = true
     }
@@ -113,7 +108,7 @@ class MainViewModel : ViewModel() {
                 val response = HttpClient.okHttpClient.newCall(request).execute()
 
                 if (response.isSuccessful) {
-                    val res = EPGXmlParser().parse(response.body!!.byteStream())
+                    val res = EPGXmlParser().parse(response.body()!!.byteStream())
 
                     withContext(Dispatchers.Main) {
                         for (m in listModel) {
@@ -121,7 +116,7 @@ class MainViewModel : ViewModel() {
                         }
                     }
                 } else {
-                    Log.e(TAG, "EPG ${response.code}")
+                    Log.e(TAG, "EPG ${response.code()}")
                     R.string.epg_status_err.showToast()
                 }
             }
@@ -231,7 +226,7 @@ class MainViewModel : ViewModel() {
             '[' -> {
                 try {
                     val type = object : com.google.gson.reflect.TypeToken<List<TV>>() {}.type
-                    list = com.google.gson.Gson().fromJson(string, type)
+                    list = Gson().fromJson(string, type)
                     SP.channelListJson = string
                     Log.i(TAG, "导入频道 ${list.size}")
                 } catch (e: Exception) {
@@ -362,12 +357,12 @@ class MainViewModel : ViewModel() {
             }
         }
 
-        list2Channel()
+        list2Channel(list)
 
         return true
     }
 
-    private fun list2Channel() {
+    private fun list2Channel(list: List<TV>) {
         groupModel.initTVGroup()
 
         val map: MutableMap<String, MutableList<TVModel>> = mutableMapOf()
