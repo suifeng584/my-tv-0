@@ -1,6 +1,5 @@
 package com.lizongying.mytv0
 
-import android.app.Application
 import android.content.Context
 import android.content.res.Resources
 import android.os.Handler
@@ -92,10 +91,6 @@ class MyTVApplication : MultiDexApplication() {
 
     fun px2Px(px: Int): Int {
         return (px * ratio + 0.5f).toInt()
-    }
-
-    fun px2Px2(px: Int): Int {
-        return (px * ratio * density + 0.5f).toInt()
     }
 
     fun px2PxFont(px: Float): Float {

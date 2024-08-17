@@ -105,7 +105,14 @@ class PlayerFragment : Fragment() {
                     }
 
                     override fun onPlaybackStateChanged(playbackState: Int) {
-                        Log.d(TAG, "playbackState $playbackState")
+                        val stateString = when (playbackState) {
+                            Player.STATE_IDLE -> "idle"
+                            Player.STATE_BUFFERING -> "buffering"
+                            Player.STATE_READY -> "ready"
+                            Player.STATE_ENDED -> "end"
+                            else -> "unknown"
+                        }
+                        Log.d(TAG, "playbackState $stateString")
                         super.onPlaybackStateChanged(playbackState)
                     }
 
@@ -276,6 +283,7 @@ class PlayerFragment : Fragment() {
         super.onDestroyView()
         _binding = null
     }
+
     protected fun triggerMetadata(metadata: Metadata) {
         //onMetadataListeners.forEach { it(metadata) }
         Log.d(TAG, "metadata: $metadata")

@@ -22,7 +22,6 @@ class TVGroupModel : ViewModel() {
     val positionValue: Int
         get() = _position.value ?: 0
 
-
     private val _positionPlaying = MutableLiveData<Int>()
     val positionPlaying: LiveData<Int>
         get() = _positionPlaying
@@ -87,15 +86,15 @@ class TVGroupModel : ViewModel() {
         )
         (_tvGroup.value as List<TVListModel>)[1].initTVList()
     }
-
+    //API19-: clear() in ViewModel must rename!
     fun clear2() {
         if (SP.showAllChannels) {
             _tvGroup.value =
-                mutableListOf(getTVListModelNotFilter(0)!!, getTVListModelNotFilter(1)!!)
+                mutableListOf(getFavoritesList()!!, getAllList()!!)
             setPosition(0)
-            getTVListModelNotFilter(1)?.clear2()
+            getAllList()?.clear2()
         } else {
-            _tvGroup.value = mutableListOf(getTVListModelNotFilter(0)!!)
+            _tvGroup.value = mutableListOf(getFavoritesList()!!)
             setPosition(0)
         }
     }
@@ -159,6 +158,14 @@ class TVGroupModel : ViewModel() {
         return getTVListModelNotFilter(positionValue)
     }
 
+    fun getFavoritesList(): TVListModel? {
+        return getTVListModelNotFilter(0)
+    }
+
+    fun getAllList(): TVListModel? {
+        return getTVListModelNotFilter(1)
+    }
+
     // get & set
     // keep: In the current list loop
     fun getPrev(keep: Boolean = false): TVModel? {
@@ -170,7 +177,7 @@ class TVGroupModel : ViewModel() {
             return null
         }
 
-        var tvListModel = getTVListModelNotFilter(positionValue)!!
+        var tvListModel = getCurrentList()!!
         if (keep) {
             Log.i(TAG, "group position $positionValue")
             return tvListModel.getPrev()
@@ -206,7 +213,7 @@ class TVGroupModel : ViewModel() {
             return null
         }
 
-        var tvListModel = getTVListModelNotFilter(positionValue)!!
+        var tvListModel = getCurrentList()!!
         if (keep) {
             return tvListModel.getNext()
         }
